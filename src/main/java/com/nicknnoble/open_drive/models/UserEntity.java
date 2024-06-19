@@ -4,9 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.data.cassandra.core.mapping.Indexed;
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.Table;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,20 +13,19 @@ import org.springframework.security.core.userdetails.UserDetails;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Table("users")
+
 @Data
 @NoArgsConstructor
+@Document("users")
 public class UserEntity implements UserDetails {
     
-    @PrimaryKey
+    @Id
     private UUID id;
     
-    @Indexed
     private String username;
 
     private String password;
 
-    @Indexed
     private Role role;
 
     public UserEntity(String username, String password, Role role) {

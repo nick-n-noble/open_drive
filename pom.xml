@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.nicknnoble</groupId>
-	<artifactId>auth_cassandra</artifactId>
+	<artifactId>open_drive</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>auth_cassandra</name>
 	<description>Demo project for Spring Boot</description>
@@ -17,9 +17,13 @@
 		<java.version>17</java.version>
 	</properties>
 	<dependencies>
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-cassandra</artifactId>
+		</dependency> -->
+        <dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-mongodb</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
