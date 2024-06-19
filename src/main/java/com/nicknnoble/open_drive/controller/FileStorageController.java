@@ -62,13 +62,7 @@ public class FileStorageController {
         
         try {
             String fileName = fileStorageService.storeFile(file, dir, request);
-
-            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/api/file/download/")
-                .path(fileName)
-                .toUriString();
-            
-            FileResponseDto fileResponse = new FileResponseDto(fileName, fileDownloadUri, file.getContentType(), file.getSize());
+            FileResponseDto fileResponse = new FileResponseDto(fileName, file.getContentType(), file.getSize());
             return new ResponseEntity<FileResponseDto>(fileResponse, HttpStatus.OK);
         } catch (FileStorageException e) {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
