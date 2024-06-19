@@ -1,5 +1,6 @@
 package com.nicknnoble.open_drive.models;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -28,11 +29,17 @@ public class UserEntity implements UserDetails {
 
     private Role role;
 
+    private List<Directory> directories;
+
+    private List<FileEntry> files;
+
     public UserEntity(String username, String password, Role role) {
         this.id = UUID.randomUUID();
         this.username = username;
         this.password = password;
         this.role = role;
+        this.directories = new ArrayList<Directory>();
+        this.files = new ArrayList<FileEntry>();
     }
 
     @Override

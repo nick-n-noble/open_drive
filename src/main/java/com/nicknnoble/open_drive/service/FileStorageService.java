@@ -17,6 +17,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.nicknnoble.open_drive.filestorage.FileNotFoundException;
 import com.nicknnoble.open_drive.filestorage.FileStorageException;
 import com.nicknnoble.open_drive.filestorage.FileStorageProperties;
+import com.nicknnoble.open_drive.models.FileEntry;
+import com.nicknnoble.open_drive.models.UserEntity;
+import com.nicknnoble.open_drive.repository.UserRepository;
 import com.nicknnoble.open_drive.security.JWTAuthenticationFilter;
 import com.nicknnoble.open_drive.security.JwtGenerator;
 
@@ -35,6 +38,9 @@ public class FileStorageService {
 
     @Autowired 
     private JWTAuthenticationFilter jwtAuthenticationFilter;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public FileStorageService(FileStorageProperties FileStorageProperties) throws FileStorageException {
         this.fileStorageLocation = Paths.get(FileStorageProperties.getUploadDir()).toAbsolutePath().normalize();
@@ -82,14 +88,17 @@ public class FileStorageService {
         return name != null && !name.isEmpty() && name.matches(regex) && !name.contains("..") && name.length() < 255;
     }
 
-    public String storeFile(MultipartFile file, String dir) throws FileStorageException {
+    public String storeFile(MultipartFile file, String dir, HttpServletRequest request) throws FileStorageException {
+
+        final String USER_DIR = getUserDirFromRequest(request);
+        String uploadDir = USER_DIR + '/' + dir; 
+        System.out.println("UPLOAD DIR: " + uploadDir);
+
         String originalFilename = file.getOriginalFilename();
 
         if (originalFilename == null) {
             throw new FileStorageException("Failed to store file with a null filename.");
         }
-       
-        
         
         // Normalize file name
         String fileName = StringUtils.cleanPath(originalFilename);
@@ -98,7 +107,7 @@ public class FileStorageService {
             throw new FileStorageException("Invalid file name: " + fileName);
         }
 
-        Path dirPath = fileStorageLocation.resolve(dir);
+        Path dirPath = fileStorageLocation.resolve(uploadDir);
 
         if(!Files.exists(dirPath)) {
             throw new FileStorageException("Directory " + dir + " does not exist");
@@ -108,6 +117,10 @@ public class FileStorageService {
             Path targetLocation = dirPath.resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
+            UserEntity user = userService.getUserFromRequest(request);
+            user.getFiles().add(new FileEntry(fileName, dir + fileName));
+
+            userRepository.save(user);
             return fileName;
 
         } catch (IOException e) {
@@ -115,19 +128,24 @@ public class FileStorageService {
         }
     }
 
-    public Resource loadFileAsResource(String fileName) throws FileNotFoundException{
+    public Resource loadFileAsResource(String fileLocation, HttpServletRequest request) throws FileNotFoundException{
+
+        final String USER_DIR = getUserDirFromRequest(request);
+        String downloadDir = USER_DIR + '/' + fileLocation; 
+        System.out.println("DOWNLOAD DIR: " + downloadDir);
+
         try {
-            Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
+            Path filePath = this.fileStorageLocation.resolve(downloadDir).normalize();
             Resource resource = new UrlResource(filePath.toUri());
 
             if (!resource.exists()) {
-                throw new FileNotFoundException("File not found " + fileName);
+                throw new FileNotFoundException("File not found " + fileLocation);
             }
 
             return resource;
 
         } catch (MalformedURLException e) {
-            throw new FileNotFoundException("File not found " + fileName, e);
+            throw new FileNotFoundException("File not found " + fileLocation, e);
         }
     }
 
