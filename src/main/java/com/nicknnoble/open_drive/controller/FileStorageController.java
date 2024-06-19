@@ -11,21 +11,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.nicknnoble.open_drive.dto.FileResponseDto;
 import com.nicknnoble.open_drive.filestorage.FileNotFoundException;
 import com.nicknnoble.open_drive.filestorage.FileStorageException;
-import com.nicknnoble.open_drive.models.UserEntity;
-import com.nicknnoble.open_drive.repository.UserRepository;
 import com.nicknnoble.open_drive.service.FileStorageService;
-import com.nicknnoble.open_drive.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -36,12 +31,7 @@ public class FileStorageController {
     @Autowired
     private FileStorageService fileStorageService;
 
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private UserRepository userRepository;
-
+    // TODO: Change to use DTO and implement database functionality
     @PostMapping("create-dir")
     public ResponseEntity<?> createDir(@RequestParam("name") String dirName, @RequestParam("parent") String parentDir, HttpServletRequest request) {
         
@@ -57,6 +47,7 @@ public class FileStorageController {
         }
     }
 
+    // TODO: Change to use DTO
     @PostMapping("upload")
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam String dir, HttpServletRequest request) {
         
@@ -77,6 +68,7 @@ public class FileStorageController {
     //         .collect(Collectors.toList());
     // }
 
+    // TODO: Change to use DTO
     @GetMapping("/download")
     public ResponseEntity<?> downloadFile(@RequestParam String fileLocation, HttpServletRequest request) {
         Logger logger = LoggerFactory.getLogger(FileStorageController.class);

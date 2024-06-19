@@ -1,10 +1,12 @@
 package com.nicknnoble.open_drive.models;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class FileEntry {
 
-    private final String fileName;
-    private final String serverFilePath;
+    private String fileName;
+    private String serverFilePath;
 }
