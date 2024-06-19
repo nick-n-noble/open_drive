@@ -6,10 +6,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import com.nicknnoble.open_drive.security.SecurityConstants;
 
 @SpringBootApplication
-public class AuthCassandraApplication {
+public class OpenDriveApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(AuthCassandraApplication.class, args);
-        System.out.println("SECRET KEY: " + SecurityConstants.SECRET_KEY);
+		SpringApplication.run(OpenDriveApplication.class, args);
 	}
 }
