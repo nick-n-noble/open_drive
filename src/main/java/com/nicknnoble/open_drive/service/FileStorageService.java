@@ -46,8 +46,9 @@ public class FileStorageService {
     private UserRepository userRepository;
 
     public FileStorageService(FileStorageProperties FileStorageProperties) throws FileStorageException {
+        
         this.fileStorageLocation = Paths.get(FileStorageProperties.getUploadDir()).toAbsolutePath().normalize();
-        //System.out.println("FILE STORAGE PATH STRING FOR REFERENCE: " + fileStorageLocation.toString());
+        
         try {
             Files.createDirectories(this.fileStorageLocation);
         } catch (IOException e) {
@@ -80,7 +81,6 @@ public class FileStorageService {
 
         final String USER_DIR = getUserDirFromRequest(request);
         String serverDir = USER_DIR + '/' + parentDir; 
-        System.out.println("PARENT DIR: " + parentDir);
 
         if (!isValidFileName(dirName)) {
             throw new FileStorageException("Invalid directory name: " + dirName);
@@ -116,7 +116,6 @@ public class FileStorageService {
 
         final String USER_DIR = getUserDirFromRequest(request);
         String uploadDir = USER_DIR + '/' + parentDir; 
-        System.out.println("UPLOAD DIR: " + uploadDir);
 
         String originalFilename = file.getOriginalFilename();
 
@@ -174,7 +173,6 @@ public class FileStorageService {
 
         final String USER_DIR = getUserDirFromRequest(request);
         String downloadDir = USER_DIR + '/' + filePath; 
-        System.out.println("DOWNLOAD DIR: " + downloadDir);
 
         try {
             Path serverFilePath = this.fileStorageLocation.resolve(downloadDir).normalize();

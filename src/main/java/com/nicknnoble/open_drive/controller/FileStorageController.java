@@ -36,7 +36,7 @@ public class FileStorageController {
 
     @PostMapping("create-dir")
     public ResponseEntity<String> createDir(CreateDirectoryDTO createDirectoryDTO, HttpServletRequest request) {
-        System.out.println(createDirectoryDTO.toString());
+
         try {
             String dir = fileStorageService.createDirectory(createDirectoryDTO.getDirName(), createDirectoryDTO.getParentDir(), request);
             return new ResponseEntity<String>(dir + " created", HttpStatus.OK);
