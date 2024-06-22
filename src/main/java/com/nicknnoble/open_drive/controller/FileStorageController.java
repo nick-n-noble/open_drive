@@ -35,8 +35,8 @@ public class FileStorageController {
     private FileStorageService fileStorageService;
 
     @PostMapping("create-dir")
-    public ResponseEntity<String> createDir(@RequestBody CreateDirectoryDTO createDirectoryDTO, HttpServletRequest request) {
-
+    public ResponseEntity<String> createDir(CreateDirectoryDTO createDirectoryDTO, HttpServletRequest request) {
+        System.out.println(createDirectoryDTO.toString());
         try {
             String dir = fileStorageService.createDirectory(createDirectoryDTO.getDirName(), createDirectoryDTO.getParentDir(), request);
             return new ResponseEntity<String>(dir + " created", HttpStatus.OK);
@@ -46,7 +46,7 @@ public class FileStorageController {
     }
 
     @PostMapping("upload")
-    public ResponseEntity<?> uploadFile(@RequestBody UploadFileDTO uploadFileDTO, HttpServletRequest request) {
+    public ResponseEntity<?> uploadFile(UploadFileDTO uploadFileDTO, HttpServletRequest request) {
         
         MultipartFile file = uploadFileDTO.getFile();
 
@@ -68,7 +68,7 @@ public class FileStorageController {
     // }
 
     @GetMapping("/download")
-    public ResponseEntity<?> downloadFile(@RequestBody DownloadFileDTO downloadFileDTO, HttpServletRequest request) {
+    public ResponseEntity<?> downloadFile(DownloadFileDTO downloadFileDTO, HttpServletRequest request) {
         Logger logger = LoggerFactory.getLogger(FileStorageController.class);
         try {
             Resource resource = fileStorageService.loadFileAsResource(downloadFileDTO.getFilePath(), request);
