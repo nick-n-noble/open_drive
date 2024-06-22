@@ -1,8 +1,10 @@
 package com.nicknnoble.open_drive.models;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
@@ -28,8 +30,8 @@ public class UserEntity implements UserDetails {
     private String password;
 
     private Role role;
-
-    private List<Directory> directories;
+    
+    private Map<String, Directory> directories;
 
     private List<FileEntry> files;
 
@@ -38,8 +40,40 @@ public class UserEntity implements UserDetails {
         this.username = username;
         this.password = password;
         this.role = role;
-        this.directories = new ArrayList<Directory>();
-        this.files = new ArrayList<FileEntry>();
+        this.directories = new HashMap<String, Directory>();
+        this.files = new LinkedList<FileEntry>();
+    }
+
+    public void addDirectory(String name, String path) {
+        Directory parentDirectory = getDirectoryByPathString(path);
+        if (parentDirectory == null) {
+            directories.put(name, new Directory(name));
+            return;
+        }
+        parentDirectory.getDirectories().put(name, new Directory(name));
+
+    }
+
+    public Directory getDirectoryByPathString(String path) throws RuntimeException {
+
+        if (path.isEmpty()) {
+            return null;
+        }
+
+        String[] pathParts = path.split("/");
+
+        Map<String, Directory> currentDirectories = directories;
+        Directory currentDirectory = null;
+
+        for (String part : pathParts) {
+            currentDirectory = currentDirectories.get(part);
+            if (currentDirectory == null) {
+                throw new RuntimeException("Directory not found");
+            }
+            currentDirectories = currentDirectory.getDirectories();
+        }
+
+        return currentDirectory;
     }
 
     @Override
