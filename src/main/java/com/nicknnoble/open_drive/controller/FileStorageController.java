@@ -38,7 +38,7 @@ public class FileStorageController {
     @Autowired
     private FileStorageService fileStorageService;
 
-    @PostMapping("create-dir")
+    @PostMapping("createDir")
     public ResponseEntity<String> createDir(CreateDirectoryDTO createDirectoryDTO, HttpServletRequest request) {
 
         try {
@@ -49,7 +49,7 @@ public class FileStorageController {
         }
     }
 
-    @PostMapping("upload")
+    @PostMapping("uploadFile")
     public ResponseEntity<?> uploadFile(UploadFileDTO uploadFileDTO, HttpServletRequest request) {
         
         MultipartFile file = uploadFileDTO.getFile();
@@ -63,7 +63,7 @@ public class FileStorageController {
         }
     }
 
-    @PostMapping("uploadMultiple")
+    @PostMapping("uploadMultipleFiles")
     public List<ResponseEntity<?>> uploadMultipleFiles(UploadMultipleFilesDTO uploadMultipleFilesDTO, HttpServletRequest request) {
 
         MultipartFile[] files = uploadMultipleFilesDTO.getFiles();
@@ -75,7 +75,7 @@ public class FileStorageController {
             .collect(Collectors.toList());
     }
 
-    @GetMapping("/download")
+    @GetMapping("downloadFile")
     public ResponseEntity<?> downloadFile(DownloadFileDTO downloadFileDTO, HttpServletRequest request) {
         Logger logger = LoggerFactory.getLogger(FileStorageController.class);
         try {
