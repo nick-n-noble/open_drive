@@ -24,7 +24,7 @@ import com.nicknnoble.open_drive.models.FileEntry;
 import com.nicknnoble.open_drive.models.UserEntity;
 import com.nicknnoble.open_drive.repository.UserRepository;
 import com.nicknnoble.open_drive.security.JWTAuthenticationFilter;
-import com.nicknnoble.open_drive.security.JwtGenerator;
+import com.nicknnoble.open_drive.security.JWTGenerator;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -37,7 +37,7 @@ public class FileStorageService {
     private UserService userService;
 
     @Autowired
-    private JwtGenerator jwtGenerator;
+    private JWTGenerator jwtGenerator;
 
     @Autowired 
     private JWTAuthenticationFilter jwtAuthenticationFilter;

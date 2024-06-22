@@ -21,7 +21,7 @@ import jakarta.servlet.DispatcherType;
 public class SecurityConfig {
 
     @Autowired
-    private JwtAuthEntryPoint authEntryPoint;
+    private JWTAuthEntryPoint authEntryPoint;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

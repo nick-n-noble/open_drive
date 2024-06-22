@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class FileResponseDto {
+public class FileResponseDTO {
    
     private String fileName;
     private String fileType;

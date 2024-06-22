@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import com.nicknnoble.open_drive.models.UserEntity;
 import com.nicknnoble.open_drive.repository.UserRepository;
 import com.nicknnoble.open_drive.security.JWTAuthenticationFilter;
-import com.nicknnoble.open_drive.security.JwtGenerator;
+import com.nicknnoble.open_drive.security.JWTGenerator;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -24,7 +24,7 @@ public class UserService {
     private JWTAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
-    private JwtGenerator jwtGenerator;
+    private JWTGenerator jwtGenerator;
 
     public UUID getIdByUsername(String username) {
         Optional <UserEntity> user = userRepository.findByUsername(username);

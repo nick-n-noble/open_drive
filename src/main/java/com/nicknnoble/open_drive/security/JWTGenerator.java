@@ -10,7 +10,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 
 @Component
-public class JwtGenerator {
+public class JWTGenerator {
 
     public String generateToken(Authentication authentication) {
         String username = authentication.getName();

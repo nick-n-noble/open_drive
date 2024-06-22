@@ -11,7 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
+public class JWTAuthEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,

@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.nicknnoble.open_drive.dto.AuthResponseDto;
-import com.nicknnoble.open_drive.dto.LoginDto;
-import com.nicknnoble.open_drive.dto.RegisterDto;
+import com.nicknnoble.open_drive.dto.AuthResponseDTO;
+import com.nicknnoble.open_drive.dto.LoginDTO;
+import com.nicknnoble.open_drive.dto.RegisterDTO;
 import com.nicknnoble.open_drive.models.Role;
 import com.nicknnoble.open_drive.models.UserEntity;
 import com.nicknnoble.open_drive.repository.UserRepository;
-import com.nicknnoble.open_drive.security.JwtGenerator;
+import com.nicknnoble.open_drive.security.JWTGenerator;
 import com.nicknnoble.open_drive.service.FileStorageService;
 import com.nicknnoble.open_drive.service.UserService;
 
@@ -36,7 +36,7 @@ public class AuthController {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private JwtGenerator jwtGenerator;
+    private JWTGenerator jwtGenerator;
 
     @Autowired
     private FileStorageService fileStorageService;
@@ -45,17 +45,17 @@ public class AuthController {
     private UserService userService;
     
     @PostMapping("login")
-    public ResponseEntity<AuthResponseDto> login(LoginDto loginDto) {
+    public ResponseEntity<AuthResponseDTO> login(LoginDTO loginDto) {
         
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String token = jwtGenerator.generateToken(authentication);
-        return new ResponseEntity<AuthResponseDto>(new AuthResponseDto(token) , HttpStatus.OK);
+        return new ResponseEntity<AuthResponseDTO>(new AuthResponseDTO(token) , HttpStatus.OK);
     }
 
     @PostMapping("register")
-    public ResponseEntity<String> register(RegisterDto registerDto) {
+    public ResponseEntity<String> register(RegisterDTO registerDto) {
         if (userRepository.existsByUsername(registerDto.getUsername())) {
             return new ResponseEntity<String>("Username is taken.", HttpStatus.BAD_REQUEST);
         }

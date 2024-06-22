@@ -18,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.nicknnoble.open_drive.dto.CreateDirectoryDTO;
 import com.nicknnoble.open_drive.dto.DownloadFileDTO;
-import com.nicknnoble.open_drive.dto.FileResponseDto;
+import com.nicknnoble.open_drive.dto.FileResponseDTO;
 import com.nicknnoble.open_drive.dto.UploadFileDTO;
 import com.nicknnoble.open_drive.filestorage.FileNotFoundException;
 import com.nicknnoble.open_drive.filestorage.FileStorageException;
@@ -51,8 +51,8 @@ public class FileStorageController {
 
         try {
             String fileName = fileStorageService.storeFile(file, uploadFileDTO.getParentDir(), request);
-            FileResponseDto fileResponse = new FileResponseDto(fileName, file.getContentType(), file.getSize());
-            return new ResponseEntity<FileResponseDto>(fileResponse, HttpStatus.OK);
+            FileResponseDTO fileResponse = new FileResponseDTO(fileName, file.getContentType(), file.getSize());
+            return new ResponseEntity<FileResponseDTO>(fileResponse, HttpStatus.OK);
         } catch (FileStorageException e) {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
