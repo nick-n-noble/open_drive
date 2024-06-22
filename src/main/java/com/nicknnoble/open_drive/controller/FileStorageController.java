@@ -1,6 +1,9 @@
 package com.nicknnoble.open_drive.controller;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,6 +24,7 @@ import com.nicknnoble.open_drive.dto.CreateDirectoryDTO;
 import com.nicknnoble.open_drive.dto.DownloadFileDTO;
 import com.nicknnoble.open_drive.dto.FileResponseDTO;
 import com.nicknnoble.open_drive.dto.UploadFileDTO;
+import com.nicknnoble.open_drive.dto.UploadMultipleFilesDTO;
 import com.nicknnoble.open_drive.filestorage.FileNotFoundException;
 import com.nicknnoble.open_drive.filestorage.FileStorageException;
 import com.nicknnoble.open_drive.service.FileStorageService;
@@ -58,13 +63,17 @@ public class FileStorageController {
         }
     }
 
-    // @PostMapping("uploadMultiple")
-    // public List<ResponseEntity<?>> uploadMultipleFiles(@RequestParam("files") MultipartFile[] files) {
-    //     return Arrays.asList(files)
-    //         .stream()
-    //         .map(file -> uploadFile(file))
-    //         .collect(Collectors.toList());
-    // }
+    @PostMapping("uploadMultiple")
+    public List<ResponseEntity<?>> uploadMultipleFiles(UploadMultipleFilesDTO uploadMultipleFilesDTO, HttpServletRequest request) {
+
+        MultipartFile[] files = uploadMultipleFilesDTO.getFiles();
+        String parentDir = uploadMultipleFilesDTO.getParentDir();
+
+        return Arrays.asList(files)
+            .stream()
+            .map(file -> uploadFile(new UploadFileDTO(file, parentDir), request))
+            .collect(Collectors.toList());
+    }
 
     @GetMapping("/download")
     public ResponseEntity<?> downloadFile(DownloadFileDTO downloadFileDTO, HttpServletRequest request) {
