@@ -74,7 +74,7 @@ public class FileStorageService {
 
     public String createDirectory(String dirName, String parentDir, HttpServletRequest request) throws FileStorageException {
         
-        if (!isValidDirectoryPath(parentDir)) {
+        if (!parentDir.isEmpty() && !isValidDirectoryPath(parentDir)) {
             throw new FileStorageException(parentDir + " is not a valid path");
         }
 
@@ -110,7 +110,7 @@ public class FileStorageService {
 
     public String storeFile(MultipartFile file, String parentDir, HttpServletRequest request) throws FileStorageException {
 
-        if (!isValidDirectoryPath(parentDir)) {
+        if (!parentDir.isEmpty() && !isValidDirectoryPath(parentDir)) {
             throw new FileStorageException(parentDir + " is not a valid path");
         }
 
