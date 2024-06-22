@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.catalina.connector.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,6 +107,16 @@ public class FileStorageController {
         try {
             String dir = fileStorageService.deleteDirectory(deleteFileDTO.getPath(), request);
             return new ResponseEntity<String>(dir + " deleted", HttpStatus.OK);
+        } catch (FileStorageException e) {
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping("deleteFile")
+    public ResponseEntity<String> deleteFile(DeleteFileDTO deleteFileDTO, HttpServletRequest request) {
+        try {
+            String file = fileStorageService.deleteFile(deleteFileDTO.getPath(), request);
+            return new ResponseEntity<String>(file + " deleted", HttpStatus.OK);
         } catch (FileStorageException e) {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }

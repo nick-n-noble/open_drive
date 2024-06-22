@@ -3,7 +3,6 @@ package com.nicknnoble.open_drive.models;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -34,7 +33,7 @@ public class UserEntity implements UserDetails {
     
     private Map<String, Directory> directories;
 
-    private List<FileEntry> files;
+    private Map<String, FileEntry> files;
 
     public UserEntity(String username, String password, Role role) {
         this.id = UUID.randomUUID();
@@ -42,7 +41,7 @@ public class UserEntity implements UserDetails {
         this.password = password;
         this.role = role;
         this.directories = new HashMap<String, Directory>();
-        this.files = new LinkedList<FileEntry>();
+        this.files = new HashMap<String, FileEntry>();
     }
 
     public void addDirectory(String name, String path) {
@@ -54,6 +53,15 @@ public class UserEntity implements UserDetails {
         parentDirectory.getDirectories().put(name, new Directory(name));
 
     }
+    public void addFile(String name, String parentDir, String serverFilePath) {
+        Directory parentDirectory = getDirectoryByPathString(parentDir);
+        name = name.replace('.', '|');
+        if (parentDirectory == null) {
+            files.put(name, new FileEntry(name, serverFilePath));
+            return;
+        }
+        parentDirectory.getFiles().put(name, new FileEntry(name, serverFilePath));
+    }
 
     public void removeDirectory(String path) throws Exception {
         if (path.isEmpty()) {
@@ -64,7 +72,7 @@ public class UserEntity implements UserDetails {
         String directoryToRemove = pathParts[pathParts.length - 1];
 
         if (pathParts.length == 1) {
-            directories.remove(pathParts[0]);
+            directories.remove(directoryToRemove);
             return;
         }
 
@@ -81,10 +89,39 @@ public class UserEntity implements UserDetails {
             currentDirectories = directory.getDirectories();
         }
         if(directory == null) {
-            throw new Exception("Directory could not be removed and this exception should never be thrown");
+            throw new Exception("Directory not found and this exception should never be thrown");
         }
         directory.getDirectories().remove(directoryToRemove);
         
+    }
+    
+    public void removeFile(String path) throws Exception {
+        
+        String[] pathParts = path.split("/");
+        String fileToRemove = pathParts[pathParts.length - 1];
+        fileToRemove = fileToRemove.replace('.', '|');
+
+        if (pathParts.length == 1) {
+            files.remove(fileToRemove);
+            return;
+        }
+
+        pathParts = Arrays.copyOf(pathParts, pathParts.length - 1);
+
+        Map<String, Directory> currentDirectories = directories;
+        Directory directory = null;
+
+        for (String part : pathParts) {
+            directory = currentDirectories.get(part);
+            if (directory == null) {
+                throw new RuntimeException("Directory not found");
+            }
+            currentDirectories = directory.getDirectories();
+        }
+        if(directory == null) {
+            throw new Exception("Directory not found and this exception should never be thrown");
+        }
+        directory.getFiles().remove(fileToRemove);
     }
 
     public Directory getDirectoryByPathString(String path) throws RuntimeException {

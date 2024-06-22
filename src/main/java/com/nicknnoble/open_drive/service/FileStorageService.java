@@ -9,7 +9,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.catalina.session.FileStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -21,8 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.nicknnoble.open_drive.filestorage.FileNotFoundException;
 import com.nicknnoble.open_drive.filestorage.FileStorageException;
 import com.nicknnoble.open_drive.filestorage.FileStorageProperties;
-import com.nicknnoble.open_drive.models.Directory;
-import com.nicknnoble.open_drive.models.FileEntry;
 import com.nicknnoble.open_drive.models.UserEntity;
 import com.nicknnoble.open_drive.repository.UserRepository;
 import com.nicknnoble.open_drive.security.JWTAuthenticationFilter;
@@ -147,18 +144,9 @@ public class FileStorageService {
 
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-            UserEntity user = userService.getUserFromRequest(request);
-            Directory userDirectory = user.getDirectoryByPathString(parentDir);
-            
-            if (userDirectory == null) {
-                user.getFiles().add(new FileEntry(fileName, parentDir + fileName));
-            }
-
-            else {
-                userDirectory.getFiles().add(new FileEntry(fileName, parentDir + fileName));
-            }
-            
-
+            UserEntity user = userService.getUserFromRequest(request); 
+            user.addFile(fileName, parentDir, parentDir + fileName);
+                        
             userRepository.save(user);
             return fileName;
 
@@ -188,6 +176,33 @@ public class FileStorageService {
 
         } catch (MalformedURLException e) {
             throw new FileNotFoundException("File not found " + filePath, e);
+        }
+    }
+
+    public String deleteFile(String path, HttpServletRequest request) throws FileStorageException {
+        if (!isValidFilePath(path)) {
+            throw new FileStorageException(path + " is not a valid path.");
+        }
+        
+        final String USER_DIR = getUserDirFromRequest(request);
+        String deleteFile = USER_DIR + '/' + path; 
+
+        try {
+            Path serverFilePath = fileStorageLocation.resolve(deleteFile).normalize();
+
+            if (!Files.exists(serverFilePath)) {
+                throw new FileStorageException(path + " does not exist");
+            }
+
+            FileSystemUtils.deleteRecursively(serverFilePath);
+            UserEntity user = userService.getUserFromRequest(request);
+            user.removeFile(path);
+            userRepository.save(user);
+
+            return serverFilePath.toString();
+
+        } catch (Exception e) {
+            throw new FileStorageException(e.getMessage(), e);
         }
     }
 
