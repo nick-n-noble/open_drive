@@ -12,12 +12,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.nicknnoble.open_drive.dto.CreateDirectoryDTO;
+import com.nicknnoble.open_drive.dto.DownloadFileDTO;
 import com.nicknnoble.open_drive.dto.FileResponseDto;
+import com.nicknnoble.open_drive.dto.UploadFileDTO;
 import com.nicknnoble.open_drive.filestorage.FileNotFoundException;
 import com.nicknnoble.open_drive.filestorage.FileStorageException;
 import com.nicknnoble.open_drive.service.FileStorageService;
@@ -31,28 +34,24 @@ public class FileStorageController {
     @Autowired
     private FileStorageService fileStorageService;
 
-    // TODO: Change to use DTO and implement database functionality
     @PostMapping("create-dir")
-    public ResponseEntity<?> createDir(@RequestParam("name") String dirName, @RequestParam("parent") String parentDir, HttpServletRequest request) {
-        
-        final String USER_DIR = fileStorageService.getUserDirFromRequest(request);
-        parentDir = USER_DIR + '/' + parentDir; 
-        System.out.println("PARENT DIR: " + parentDir);
+    public ResponseEntity<String> createDir(@RequestBody CreateDirectoryDTO createDirectoryDTO, HttpServletRequest request) {
 
         try {
-            String dir = fileStorageService.createDirectory(dirName, parentDir);
-            return new ResponseEntity<String>(dir, HttpStatus.OK);
+            String dir = fileStorageService.createDirectory(createDirectoryDTO.getDirName(), createDirectoryDTO.getParentDir(), request);
+            return new ResponseEntity<String>(dir + " created", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
-    // TODO: Change to use DTO
     @PostMapping("upload")
-    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam String dir, HttpServletRequest request) {
+    public ResponseEntity<?> uploadFile(@RequestBody UploadFileDTO uploadFileDTO, HttpServletRequest request) {
         
+        MultipartFile file = uploadFileDTO.getFile();
+
         try {
-            String fileName = fileStorageService.storeFile(file, dir, request);
+            String fileName = fileStorageService.storeFile(file, uploadFileDTO.getParentDir(), request);
             FileResponseDto fileResponse = new FileResponseDto(fileName, file.getContentType(), file.getSize());
             return new ResponseEntity<FileResponseDto>(fileResponse, HttpStatus.OK);
         } catch (FileStorageException e) {
@@ -68,12 +67,11 @@ public class FileStorageController {
     //         .collect(Collectors.toList());
     // }
 
-    // TODO: Change to use DTO
     @GetMapping("/download")
-    public ResponseEntity<?> downloadFile(@RequestParam String fileLocation, HttpServletRequest request) {
+    public ResponseEntity<?> downloadFile(@RequestBody DownloadFileDTO downloadFileDTO, HttpServletRequest request) {
         Logger logger = LoggerFactory.getLogger(FileStorageController.class);
         try {
-            Resource resource = fileStorageService.loadFileAsResource(fileLocation, request);
+            Resource resource = fileStorageService.loadFileAsResource(downloadFileDTO.getFilePath(), request);
 
             String contentType = null;
             try {

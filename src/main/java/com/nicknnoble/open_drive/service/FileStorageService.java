@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -17,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.nicknnoble.open_drive.filestorage.FileNotFoundException;
 import com.nicknnoble.open_drive.filestorage.FileStorageException;
 import com.nicknnoble.open_drive.filestorage.FileStorageProperties;
+import com.nicknnoble.open_drive.models.Directory;
 import com.nicknnoble.open_drive.models.FileEntry;
 import com.nicknnoble.open_drive.models.UserEntity;
 import com.nicknnoble.open_drive.repository.UserRepository;
@@ -60,21 +63,44 @@ public class FileStorageService {
         return userIdDir;
     }
 
-    public String createDirectory(String dirName, String parentDir) throws FileStorageException {
+    public void createNewUserDirectory(String id) throws FileStorageException {
+        try {
+            Path path = fileStorageLocation.resolve(id);
+            Files.createDirectories(path);
+        } catch (Exception e) {
+            throw new FileStorageException("User directory could not be created: " + e.getMessage(), e);
+        }
+    }
+
+    public String createDirectory(String dirName, String parentDir, HttpServletRequest request) throws FileStorageException {
+        
+        if (!isValidDirectoryPath(parentDir)) {
+            throw new FileStorageException(parentDir + " is not a valid path");
+        }
+
+        final String USER_DIR = getUserDirFromRequest(request);
+        String serverDir = USER_DIR + '/' + parentDir; 
+        System.out.println("PARENT DIR: " + parentDir);
+
         if (!isValidFileName(dirName)) {
             throw new FileStorageException("Invalid directory name: " + dirName);
         }
         try {
-            Path parentDirPath = fileStorageLocation.resolve(parentDir);
+            Path parentDirPath = fileStorageLocation.resolve(serverDir);
             if(!Files.exists(parentDirPath)) {
-                throw new FileStorageException("Parent directory " + parentDir + " does not exist");
+                throw new FileStorageException("Parent directory " + serverDir + " does not exist");
             }
 
             Path newDirPath = parentDirPath.resolve(dirName);
-            if (Files.exists(newDirPath) && Files.isDirectory(newDirPath)) {
-                // Test this again, does not display in response.
+            if (Files.exists(newDirPath)) {
                 throw new FileStorageException(dirName + " already exists in parent directory " + parentDir);
             }
+
+            UserEntity user = userService.getUserFromRequest(request);
+            user.addDirectory(dirName, parentDir);
+
+            userRepository.save(user);
+
             Files.createDirectories(newDirPath);
             return newDirPath.toString();
         } catch (IOException e) {
@@ -82,16 +108,14 @@ public class FileStorageService {
         }
     }
 
-    public static boolean isValidFileName(String name) {
-        // Regex to match valid directory names (no special characters that are not allowed)
-        String regex = "^[^/\\\\|?*<>:\"&]+$";
-        return name != null && !name.isEmpty() && name.matches(regex) && !name.contains("..") && name.length() < 255;
-    }
+    public String storeFile(MultipartFile file, String parentDir, HttpServletRequest request) throws FileStorageException {
 
-    public String storeFile(MultipartFile file, String dir, HttpServletRequest request) throws FileStorageException {
+        if (!isValidDirectoryPath(parentDir)) {
+            throw new FileStorageException(parentDir + " is not a valid path");
+        }
 
         final String USER_DIR = getUserDirFromRequest(request);
-        String uploadDir = USER_DIR + '/' + dir; 
+        String uploadDir = USER_DIR + '/' + parentDir; 
         System.out.println("UPLOAD DIR: " + uploadDir);
 
         String originalFilename = file.getOriginalFilename();
@@ -110,44 +134,79 @@ public class FileStorageService {
         Path dirPath = fileStorageLocation.resolve(uploadDir);
 
         if(!Files.exists(dirPath)) {
-            throw new FileStorageException("Directory " + dir + " does not exist");
+            throw new FileStorageException("Directory " + parentDir + " does not exist");
         }
 
         try {
             Path targetLocation = dirPath.resolve(fileName);
+
+            if (Files.exists(targetLocation)) {
+                throw new FileStorageException(fileName + " already exists in parent directory " + parentDir);
+            }
+
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
             UserEntity user = userService.getUserFromRequest(request);
-            user.getFiles().add(new FileEntry(fileName, dir + fileName));
+            Directory userDirectory = user.getDirectoryByPathString(parentDir);
+            
+            if (userDirectory == null) {
+                user.getFiles().add(new FileEntry(fileName, parentDir + fileName));
+            }
+
+            else {
+                userDirectory.getFiles().add(new FileEntry(fileName, parentDir + fileName));
+            }
+            
 
             userRepository.save(user);
             return fileName;
 
         } catch (IOException e) {
-            throw new FileStorageException("Could not store file " + fileName, e);
+            throw new FileStorageException("Could not store file " + fileName + ": " + e.getMessage(), e);
         }
     }
 
-    public Resource loadFileAsResource(String fileLocation, HttpServletRequest request) throws FileNotFoundException{
+    public Resource loadFileAsResource(String filePath, HttpServletRequest request) throws FileNotFoundException{
+
+        if (!isValidFilePath(filePath)) {
+            throw new FileNotFoundException(filePath + " is not a valid path");
+        }
 
         final String USER_DIR = getUserDirFromRequest(request);
-        String downloadDir = USER_DIR + '/' + fileLocation; 
+        String downloadDir = USER_DIR + '/' + filePath; 
         System.out.println("DOWNLOAD DIR: " + downloadDir);
 
         try {
-            Path filePath = this.fileStorageLocation.resolve(downloadDir).normalize();
-            Resource resource = new UrlResource(filePath.toUri());
+            Path serverFilePath = this.fileStorageLocation.resolve(downloadDir).normalize();
+            Resource resource = new UrlResource(serverFilePath.toUri());
 
             if (!resource.exists()) {
-                throw new FileNotFoundException("File not found " + fileLocation);
+                throw new FileNotFoundException("File not found " + filePath);
             }
 
             return resource;
 
         } catch (MalformedURLException e) {
-            throw new FileNotFoundException("File not found " + fileLocation, e);
+            throw new FileNotFoundException("File not found " + filePath, e);
         }
     }
 
+    public static boolean isValidFileName(String name) {
+        // Regex to match valid directory names (no special characters that are not allowed)
+        String regex = "^[^/\\\\|?*<>:\"&]+$";
+        return name != null && !name.isEmpty() && name.matches(regex) && !name.contains("..") && name.length() < 255;
+    }
+
+    public static boolean isValidDirectoryPath(String path) {
+        String regex = "^(?!\\/)(?!.*(?:^|\\/|\\.)\\/\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/|\\.)\\.{1,2}$)[A-Za-z0-9_\\-\\.]+(?:\\/[A-Za-z0-9_\\-\\.]+)*\\/$";        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(path);
+        return matcher.matches();
+    }
+
+    public static boolean isValidFilePath(String path) {
+        String regex = "^(?!\\/)(?!.*(?:^|\\/|\\.)\\/\\.{1,2}(?:\\/|$))(?!.*(?:^|\\/|\\.)\\.{1,2}$)[A-Za-z0-9_\\-\\.]+(?:\\/[A-Za-z0-9_\\-\\.]+)*$";        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(path);
+        return matcher.matches();
+    }
 
 }

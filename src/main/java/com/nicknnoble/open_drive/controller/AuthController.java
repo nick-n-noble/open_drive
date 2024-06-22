@@ -67,7 +67,7 @@ public class AuthController {
         userRepository.save(user);
 
         try {
-            fileStorageService.createDirectory(userService.getIdByUsername(user.getUsername()).toString(), "");
+            fileStorageService.createNewUserDirectory(userService.getIdByUsername(user.getUsername()).toString());
         } catch (Exception e) {
             userRepository.delete(user);
             return new ResponseEntity<String>("User directory was unable to be created: " + e.getMessage() + " please try again.", HttpStatus.INTERNAL_SERVER_ERROR);
