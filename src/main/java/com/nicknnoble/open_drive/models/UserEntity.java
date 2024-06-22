@@ -1,5 +1,6 @@
 package com.nicknnoble.open_drive.models;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -52,6 +53,38 @@ public class UserEntity implements UserDetails {
         }
         parentDirectory.getDirectories().put(name, new Directory(name));
 
+    }
+
+    public void removeDirectory(String path) throws Exception {
+        if (path.isEmpty()) {
+            throw new Exception("Cannot remove home directory");
+        }
+
+        String[] pathParts = path.split("/");
+        String directoryToRemove = pathParts[pathParts.length - 1];
+
+        if (pathParts.length == 1) {
+            directories.remove(pathParts[0]);
+            return;
+        }
+
+        pathParts = Arrays.copyOf(pathParts, pathParts.length - 1);
+
+        Map<String, Directory> currentDirectories = directories;
+        Directory directory = null;
+
+        for (String part : pathParts) {
+            directory = currentDirectories.get(part);
+            if (directory == null) {
+                throw new RuntimeException("Directory not found");
+            }
+            currentDirectories = directory.getDirectories();
+        }
+        if(directory == null) {
+            throw new Exception("Directory could not be removed and this exception should never be thrown");
+        }
+        directory.getDirectories().remove(directoryToRemove);
+        
     }
 
     public Directory getDirectoryByPathString(String path) throws RuntimeException {

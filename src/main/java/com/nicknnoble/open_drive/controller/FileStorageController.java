@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.catalina.connector.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.nicknnoble.open_drive.dto.CreateDirectoryDTO;
+import com.nicknnoble.open_drive.dto.DeleteFileDTO;
 import com.nicknnoble.open_drive.dto.DownloadFileDTO;
 import com.nicknnoble.open_drive.dto.FileResponseDTO;
 import com.nicknnoble.open_drive.dto.UploadFileDTO;
@@ -99,5 +101,15 @@ public class FileStorageController {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
         
+    }
+
+    @PostMapping("deleteDirectory")
+    public ResponseEntity<String> deleteDirectory(DeleteFileDTO deleteFileDTO, HttpServletRequest request) {
+        try {
+            String dir = fileStorageService.deleteDirectory(deleteFileDTO.getPath(), request);
+            return new ResponseEntity<String>(dir + " deleted", HttpStatus.OK);
+        } catch (FileStorageException e) {
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 }
