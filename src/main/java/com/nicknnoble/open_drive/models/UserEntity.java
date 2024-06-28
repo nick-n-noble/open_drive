@@ -45,6 +45,9 @@ public class UserEntity implements UserDetails {
     }
 
     public void addDirectory(String name, String path) {
+
+        path = path.replace('.', '|');
+
         Directory parentDirectory = getDirectoryByPathString(path);
         if (parentDirectory == null) {
             directories.put(name, new Directory(name));
@@ -54,6 +57,7 @@ public class UserEntity implements UserDetails {
 
     }
     public void addFile(String name, String parentDir, String serverFilePath) {
+        parentDir = parentDir.replace('.', '|');
         Directory parentDirectory = getDirectoryByPathString(parentDir);
         name = name.replace('.', '|');
         if (parentDirectory == null) {
@@ -64,6 +68,9 @@ public class UserEntity implements UserDetails {
     }
 
     public void removeDirectory(String path) throws Exception {
+        
+        path = path.replace('.', '|');
+        
         if (path.isEmpty()) {
             throw new Exception("Cannot remove home directory");
         }
@@ -97,9 +104,10 @@ public class UserEntity implements UserDetails {
     
     public void removeFile(String path) throws Exception {
         
+        path = path.replace('.', '|');
+
         String[] pathParts = path.split("/");
         String fileToRemove = pathParts[pathParts.length - 1];
-        fileToRemove = fileToRemove.replace('.', '|');
 
         if (pathParts.length == 1) {
             files.remove(fileToRemove);
