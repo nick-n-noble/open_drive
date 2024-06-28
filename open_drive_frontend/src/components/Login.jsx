@@ -1,9 +1,15 @@
 import { useState } from "react";
+import AuthService from "../services/AuthService";
+import { Link, useNavigate } from "react-router-dom";
+
+
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  const navigate = useNavigate();
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -32,7 +38,8 @@ const Login = () => {
       response.json()
       .then((data) => {
         console.log(data.accessToken);
-        localStorage.setItem("user", data.accessToken);
+        AuthService.setCurrentUser(data.accessToken);
+        navigate('/test');
       })
     })
     .catch((error) => {
@@ -71,6 +78,8 @@ const Login = () => {
         <button type="submit">Login</button>
 
       </form>
+
+      <Link to={'/register'}>Register new user</Link>
     </div>
   );
 }
