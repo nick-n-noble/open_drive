@@ -199,7 +199,7 @@ public class FileStorageService {
             user.removeFile(path);
             userRepository.save(user);
 
-            return serverFilePath.toString();
+            return path;
 
         } catch (Exception e) {
             throw new FileStorageException(e.getMessage(), e);
@@ -218,7 +218,6 @@ public class FileStorageService {
         try {
             Path serverFilePath = fileStorageLocation.resolve(deleteDir).normalize();
 
-            System.out.println(Files.exists(serverFilePath));
             if (!Files.exists(serverFilePath)) {
                 throw new FileStorageException(path + " does not exist");
             }
@@ -228,7 +227,7 @@ public class FileStorageService {
             user.removeDirectory(path);
             userRepository.save(user);
 
-            return serverFilePath.toString();
+            return path;
 
         } catch (Exception e) {
             throw new FileStorageException(e.getMessage(), e);
