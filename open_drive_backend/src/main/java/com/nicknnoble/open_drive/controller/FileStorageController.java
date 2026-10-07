@@ -102,7 +102,7 @@ public class FileStorageController {
         
     }
 
-    @PostMapping("deleteDirectory")
+    @PostMapping("deleteDir")
     public ResponseEntity<String> deleteDirectory(DeleteFileDTO deleteFileDTO, HttpServletRequest request) {
         try {
             String dir = fileStorageService.deleteDirectory(deleteFileDTO.getPath(), request);
